@@ -39,7 +39,7 @@ class ContactController extends Controller {
             'custom_fields' => $customFields,
         ]);
     
-        return response()->json(['message' => 'Contact saved successfully!', 'contact' => $contact]);
+        return response()->json(['message' => 'Contact saved successfully!', 'contact' => $contact, 'status' => 'Success']);
     }
     
 

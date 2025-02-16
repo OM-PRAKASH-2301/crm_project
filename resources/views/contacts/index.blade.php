@@ -31,7 +31,25 @@
             padding: 20px;
             border-radius: 10px;
         }
-
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            display: none;
+            z-index: 9999;
+            min-width: 200px;
+            text-align: center;
+        }
+        .success-notification {
+            background-color: #28a745;
+        }
+        .error-notification {
+            background-color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -148,8 +166,22 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-
+    <div id="notificationBox" class="notification"></div>
     <script>
+        function showNotification(message, type = 'success') {
+            let notificationBox = $('#notificationBox');
+            
+            notificationBox
+                .text(message)
+                .removeClass('success-notification error-notification')
+                .addClass(type === 'success' ? 'success-notification' : 'error-notification')
+                .fadeIn();
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notificationBox.fadeOut();
+            }, 3000);
+        }
         $(document).ready(function() {
             function showLoader() {
                 $('#ajaxLoader').show();
@@ -250,12 +282,10 @@
                     success: function (response) {
                         hideLoader();
                         if (response.status == 'Success') {
-                            alert(response.message);
-                            $('#contactForm')[0].reset();
-                            $('#contactFormContainer').hide();
-                            $('#contactSection').show();
+                            showNotification(response.message, 'success');
+                            location.reload();
                         } else {
-                            alert('Unexpected error occurred.');
+                            showNotification(response.message, 'failed');
                         }
                     },
                     error: function (xhr) {
@@ -306,7 +336,7 @@
                             _token: $('input[name="_token"]').val() // CSRF token for Laravel
                         },
                         success: function (response) {
-                            alert(response.message);
+                            showNotification(response.message, 'success');
                             location.reload(); // Reload the page to update the contact list
                         },
                         error: function (xhr) {
