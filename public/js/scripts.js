@@ -7,7 +7,6 @@ function showNotification(message, type = 'success') {
         .addClass(type === 'success' ? 'success-notification' : 'error-notification')
         .fadeIn();
 
-    // Auto-hide after 3 seconds
     setTimeout(() => {
         notificationBox.fadeOut();
     }, 3000);
@@ -28,14 +27,16 @@ $(document).ready(function() {
     });
     loadContacts();
     function loadContacts() {
+        showLoader();
         $.ajax({
             url: '/contacts/list',
             type: 'GET',
             success: function(response) {
+                hideLoader();
                 $('#contactTableBody').html(response);
             },
             error: function(xhr) {
-                alert('Failed to load contacts.');
+                showNotification(response.message, 'failed');
             }
         });
     }
@@ -170,7 +171,7 @@ $(document).ready(function() {
                     location.reload(); // Reload the page to update the contact list
                 },
                 error: function (xhr) {
-                    alert('Error: ' + xhr.responseJSON.message);
+                    showNotification(response.message, 'failed');
                 }
             });
         }
@@ -221,7 +222,7 @@ $(document).ready(function() {
                     showNotification(response.message, 'success');
                     location.reload(); // Reload to update changes
                 } else {
-                    alert('Failed to update contact!');
+                    showNotification(response.message, 'failed');
                 }
             },
             error: function (xhr) {
@@ -244,7 +245,7 @@ $(document).ready(function() {
                         $('#error-profile_image').text(errors.profile_image[0]);
                     }
                 } else {
-                    alert('Error updating contact!');
+                    showNotification(response.message, 'failed');
                 }
             }
         });
