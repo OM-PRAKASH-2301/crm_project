@@ -46,28 +46,31 @@ class ContactController extends Controller {
     public function list() {
         $contacts = Contact::where('deleted_at', 'N')->get();
         $html = '';
-    
-        foreach ($contacts as $contact) {
-            // Convert stored path to a full URL
-            $imagePath = !empty($contact->profile_image) 
-                ? asset("storage/{$contact->profile_image}") // Generate correct URL
-                : "No Image";
-    
-            $html .= "<tr>
-                        <td>{$contact->name}</td>
-                        <td>{$contact->email}</td>
-                        <td>{$contact->phone}</td>
-                        <td>{$contact->gender}</td>
-                        <td>" . 
-                            (!empty($contact->profile_image) 
-                                ? "<img src='{$imagePath}' alt='Profile Image' width='100'>" 
-                                : "No Image") . 
-                        "</td>
-                        <td>
-                            <button class='btn btn-success btn-sm editContact' data-id='{$contact->id}'>Edit</button> 
-                            <button class='btn btn-danger btn-sm deleteContact' data-id='{$contact->id}'>Delete</button>
-                        </td>
-                      </tr>";
+        if(!empty($contacts)){
+            foreach ($contacts as $contact) {
+                // Convert stored path to a full URL
+                $imagePath = !empty($contact->profile_image) 
+                    ? asset("storage/{$contact->profile_image}") // Generate correct URL
+                    : "No Image";
+        
+                $html .= "<tr>
+                            <td>{$contact->name}</td>
+                            <td>{$contact->email}</td>
+                            <td>{$contact->phone}</td>
+                            <td>{$contact->gender}</td>
+                            <td>" . 
+                                (!empty($contact->profile_image) 
+                                    ? "<img src='{$imagePath}' alt='Profile Image' width='100'>" 
+                                    : "No Image") . 
+                            "</td>
+                            <td>
+                                <button class='btn btn-success btn-sm editContact' data-id='{$contact->id}'>Edit</button> 
+                                <button class='btn btn-danger btn-sm deleteContact' data-id='{$contact->id}'>Delete</button>
+                            </td>
+                        </tr>";
+            }
+        } else {
+            $html .= "<tr><td colspan='6' class='text-center'>No record found</td></tr>";
         }
     
         return response($html);
@@ -76,25 +79,55 @@ class ContactController extends Controller {
     
 
     public function search(Request $request) {
-        $query = $request->input('search');
-        $contacts = Contact::where('name', 'like', "%$query%")
-                            ->orWhere('email', 'like', "%$query%")
-                            ->orWhere('phone', 'like', "%$query%")
-                            ->get();
-        $html = '';
+        $query = Contact::query(); 
 
-        foreach ($contacts as $contact) {
-            $html .= "<tr>
-                        <td>{$contact->name}</td>
-                        <td>{$contact->email}</td>
-                        <td>{$contact->phone}</td>
-                        <td>{$contact->gender}</td>
-                        <td><button class='btn btn-danger btn-sm deleteContact' data-id='{$contact->id}'>Delete</button></td>
-                      </tr>";
+        if ($request->filled('name')) {
+            $query->where('name', 'like', "%{$request->input('name')}%");
         }
-
+    
+        if ($request->filled('email')) {
+            $query->orWhere('email', 'like', "%{$request->input('email')}%");
+        }
+    
+        if ($request->filled('phone')) {
+            $query->orWhere('phone', 'like', "%{$request->input('phone')}%");
+        }
+    
+        $query->where('deleted_at', 'N'); 
+    
+        $contacts = $query->get();
+        $html = '';
+    
+        if ($contacts->isNotEmpty()) {
+            foreach ($contacts as $contact) {
+                // Convert stored path to a full URL
+                $imagePath = !empty($contact->profile_image) 
+                    ? asset("storage/{$contact->profile_image}") // Generate correct URL
+                    : null;
+    
+                $html .= "<tr>
+                            <td>{$contact->name}</td>
+                            <td>{$contact->email}</td>
+                            <td>{$contact->phone}</td>
+                            <td>{$contact->gender}</td>
+                            <td>" . 
+                                (!empty($imagePath) 
+                                    ? "<img src='{$imagePath}' alt='Profile Image' width='100'>" 
+                                    : "No Image") . 
+                            "</td>
+                            <td>
+                                <button class='btn btn-success btn-sm editContact' data-id='{$contact->id}'>Edit</button> 
+                                <button class='btn btn-danger btn-sm deleteContact' data-id='{$contact->id}'>Delete</button>
+                            </td>
+                          </tr>";
+            }
+        } else {
+            $html .= "<tr><td colspan='6' class='text-center'>No record found</td></tr>";
+        }
+    
         return response($html);
     }
+    
 
     public function delete(Request $request) {
         $contact = Contact::find($request->id);
