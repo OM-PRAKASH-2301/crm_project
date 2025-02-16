@@ -46,19 +46,34 @@ class ContactController extends Controller {
     public function list() {
         $contacts = Contact::where('deleted_at', 'N')->get();
         $html = '';
-
+    
         foreach ($contacts as $contact) {
+            // Convert stored path to a full URL
+            $imagePath = !empty($contact->profile_image) 
+                ? asset("storage/{$contact->profile_image}") // Generate correct URL
+                : "No Image";
+    
             $html .= "<tr>
                         <td>{$contact->name}</td>
                         <td>{$contact->email}</td>
                         <td>{$contact->phone}</td>
                         <td>{$contact->gender}</td>
-                        <td><button class='btn btn-danger btn-sm deleteContact' data-id='{$contact->id}'>Delete</button></td>
+                        <td>" . 
+                            (!empty($contact->profile_image) 
+                                ? "<img src='{$imagePath}' alt='Profile Image' width='100'>" 
+                                : "No Image") . 
+                        "</td>
+                        <td>
+                            <button class='btn btn-success btn-sm editContact' data-id='{$contact->id}'>Edit</button> 
+                            <button class='btn btn-danger btn-sm deleteContact' data-id='{$contact->id}'>Delete</button>
+                        </td>
                       </tr>";
         }
-        
+    
         return response($html);
     }
+    
+    
 
     public function search(Request $request) {
         $query = $request->input('search');

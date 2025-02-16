@@ -21,6 +21,7 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Gender</th>
+                <th>Profile Pic</th>
                 <th>Actions</th>
             </tr>
         </thead>
