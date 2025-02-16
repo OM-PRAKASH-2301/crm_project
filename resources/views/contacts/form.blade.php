@@ -17,7 +17,7 @@
 
                         <div class="col-md-4">
                             <label>Phone:</label>
-                            <input type="text" name="phone" class="form-control" id="phoneInput" maxlength="10">
+                            <input type="text" name="phone" class="form-control phoneInput" id="phoneInput" maxlength="10">
                             <div class="error-message text-danger"></div> <!-- Phone error -->
                         </div>
 

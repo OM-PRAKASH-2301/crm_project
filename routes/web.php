@@ -13,3 +13,5 @@ Route::get('/contacts/list', [ContactController::class, 'list']);
 Route::get('/contacts/search', [ContactController::class, 'search']);
 // Route::delete('/contacts/delete/{id}', [ContactController::class, 'destroy']);
 Route::post('/contacts/delete', [ContactController::class, 'delete'])->name('contacts.delete');
+Route::get('/contacts/{id}/edit', [ContactController::class, 'edit']);
+Route::post('/contacts/update', [ContactController::class, 'update'])->name('contacts.update');

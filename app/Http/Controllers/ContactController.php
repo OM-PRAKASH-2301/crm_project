@@ -72,7 +72,6 @@ class ContactController extends Controller {
         } else {
             $html .= "<tr><td colspan='6' class='text-center'>No record found</td></tr>";
         }
-    
         return response($html);
     }
     
@@ -139,5 +138,74 @@ class ContactController extends Controller {
             return response()->json(['message' => 'Contact not found!', 'status' => 'Error'], 404);
         }
     }
+
+    public function edit($id) {
+        $contact = Contact::find($id); // No need for first()
+    
+        if (!$contact) {
+            return response()->json(['status' => 'error', 'message' => 'Contact not found!']);
+        }
+        $contact->profile_image = $contact->profile_image 
+        ? asset("storage/{$contact->profile_image}") 
+        : asset('default_image.jpg'); 
+        return response()->json([
+            'status' => 'success',
+            'contact' => $contact
+        ]);
+    }
+    
+    
+    public function update(Request $request) {
+        // Validate fields with custom messages
+        $request->validate([
+            'id' => 'required|exists:contacts,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:contacts,email,' . $request->id,
+            'phone' => 'required|string|min:10|max:10|unique:contacts,phone,' . $request->id, 
+            'gender' => 'required|in:Male,Female,Other',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        ], [
+            'name.required' => 'Name is required!',
+            'email.required' => 'Email is required!',
+            'email.unique' => 'Email is already in use!',
+            'phone.required' => 'Phone number is required!',
+            'phone.unique' => 'Phone number is already in use!',
+            'phone.min' => 'Phone number must be exactly 10 digits!',
+            'phone.max' => 'Phone number must be exactly 10 digits!',
+            'gender.required' => 'Please select gender!',
+            'profile_image.image' => 'File must be an image!',
+            'profile_image.mimes' => 'Allowed formats: jpg, jpeg, png!',
+            'profile_image.max' => 'Max file size: 2MB!'
+        ]);
+
+        $contact = Contact::find($request->id);
+    
+        if (!$contact) {
+            return response()->json(['status' => 'error', 'message' => 'Contact not found!']);
+        }
+    
+        // Update contact details
+        $contact->name = $request->name;
+        $contact->email = $request->email;
+        $contact->phone = $request->phone;
+        $contact->gender = $request->gender;
+    
+        // Handle image upload
+        if ($request->hasFile('profile_image')) {
+            $imagePath = $request->file('profile_image')->store('profile_images', 'public');
+            $contact->profile_image = $imagePath;
+        }
+    
+        $contact->save();
+    
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Contact updated successfully!',
+            'contact' => $contact
+        ]);
+    }
+    
+    
+    
 }
 

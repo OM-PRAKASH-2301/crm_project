@@ -150,7 +150,7 @@ $(document).ready(function() {
     });
 
     // Allow only numbers in the phone input
-    $('#phoneInput').on('input', function () {
+    $('.phoneInput').on('input', function () {
         this.value = this.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
     });
     $(document).on('click', '.deleteContact', function () {
@@ -175,4 +175,82 @@ $(document).ready(function() {
             });
         }
     });
+    $(document).on('click', '.editContact', function () {
+        let contactId = $(this).data('id');
+    
+        $.ajax({
+            url: '/contacts/' + contactId + '/edit',
+            type: 'GET',
+            success: function (response) {
+                if (response.status === 'success') {
+                    $('#editContactModal').modal('show');
+                    // Populate form fields
+                    $('#phone').val('');  // Clear value first
+                    $('#id').val(response.contact.id);
+                    $('#name').val(response.contact.name);
+                    $('#email').val(response.contact.email);
+                    $('#phone_no').val(response.contact.phone);
+                    $('#gender').val(response.contact.gender);
+    
+                    $('#currentProfileImage').attr('src', response.contact.profile_image || 'default_image.jpg');
+                } else {
+                    alert('Contact not found!');
+                }
+            },
+            error: function () {
+                alert('Error fetching contact details!');
+            }
+        });
+    });
+    
+    // Handle form submission
+    $('#editContactForm').on('submit', function (e) {
+        e.preventDefault();
+        $('.error-message').text(''); // Clear previous error messages
+    
+        let formData = new FormData(this);
+    
+        $.ajax({
+            url: "/contacts/update",
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                if (response.status === 'success') {
+                    showNotification(response.message, 'success');
+                    location.reload(); // Reload to update changes
+                } else {
+                    alert('Failed to update contact!');
+                }
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) { // Laravel validation error
+                    let errors = xhr.responseJSON.errors;
+                    
+                    if (errors.name) {
+                        $('#error-name').text(errors.name[0]);
+                    }
+                    if (errors.email) {
+                        $('#error-email').text(errors.email[0]);
+                    }
+                    if (errors.phone) {
+                        $('#error-phone').text(errors.phone[0]);
+                    }
+                    if (errors.gender) {
+                        $('#error-gender').text(errors.gender[0]);
+                    }
+                    if (errors.profile_image) {
+                        $('#error-profile_image').text(errors.profile_image[0]);
+                    }
+                } else {
+                    alert('Error updating contact!');
+                }
+            }
+        });
+    });
+    
+    
+    
+    
 });

@@ -12,6 +12,7 @@
 
     <div id="contentBox" class="card p-4 mb-4">
         @include('contacts.list')  {{-- Contact List --}}
-        @include('contacts.form')  {{-- Contact Form --}}
+        @include('contacts.form')  {{-- form Form --}}
+        @include('contacts.edit')  {{-- edit Form --}}
     </div>
 @endsection
